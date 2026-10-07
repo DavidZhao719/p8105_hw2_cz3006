@@ -108,7 +108,8 @@ head(mr_trash)
 prof_trash = read_excel(
   "data/202610 Trash Wheel Collection Data.xlsx",
   sheet = "Professor Trash Wheel",
-  range = "A2:M1000"
+  range = "A2:M1000",
+  na = c("", "NA", "N/A")
 ) |>
   janitor::clean_names() |>
   filter(!is.na(dumpster)) |>
@@ -132,23 +133,24 @@ gwynnda = read_excel(
 
 dim(gwynnda)
 ```
+
 ```{r}
 mr_trash = mr_trash |>
   mutate(
     year = as.numeric(year),
-    across(plastic_bottles:wrappers, as.numeric)
+    across(plastic_bottles:wrappers, ~ suppressWarnings(as.numeric(.)))
   )
 
 prof_trash = prof_trash |>
   mutate(
     year = as.numeric(year),
-    across(plastic_bottles:wrappers, as.numeric)
+    across(plastic_bottles:wrappers, ~ suppressWarnings(as.numeric(.)))
   )
 
 gwynnda = gwynnda |>
   mutate(
     year = as.numeric(year),
-    across(plastic_bottles:wrappers, as.numeric)
+    across(plastic_bottles:wrappers, ~ suppressWarnings(as.numeric(.)))
   )
 
 trash_data = bind_rows(
@@ -176,7 +178,7 @@ gwynnda_june_2022 = trash_data |>
 
 gwynnda_june_2022
 ```
-The merged Trash Wheel dataset comprises 1269 observations and 16 variables. The key variables in the dataset include the number of dumpsters, month, year, date, weight in tons, volume in cubic yards, plastic bottles, cigarette butts and the name of the Trash Wheel. According to the data collected by Professor Trash Wheel, a total of 214.96 tons of trash was collected. In June 2022, Gwynnda collected a total of 18,120 cigarette butts.
+The merged Trash Wheel dataset comprises 1269 observations and 16 variables. The key variables in the dataset include the number of dumpsters, month, year, date, weight in tons, volume in cubic yards, plastic bottles, cigarette butts and the name of the Trash Wheel. According to the data collected by Professor Trash Wheel, a total of 295 tons of trash was collected. In June 2022, Gwynnda collected a total of 18,120 cigarette butts.
  
 # Problem 3
 ```{r}
@@ -260,7 +262,12 @@ amyloid_long = amyloid_df |>
     baseline:time_8,
     names_to = "visit",
     values_to = "amyloid"
+  ) |>
+  mutate(
+    amyloid = na_if(amyloid, "NA"),
+    amyloid = readr::parse_number(amyloid)
   )
+
 
 head(amyloid_long)
 dim(amyloid_long)
@@ -294,4 +301,4 @@ head(combined_df)
 write_csv(combined_df, "data/mci_amyloid_clean.csv")
 ```
 
-The original data set contained 483 participants, after removing 4 participants with MCI at baseline. Of the 483, 93 later developed MCI. The average age at baseline was 65.03. 30% of the women were APOE4 carriers. The amyloid data set contained 487 participants. This data set was converted to long format, resulting in 5 observations per participant. There were 8 participants in the baseline data set and 16 participants in the amyloid data set only. Keeping the participants in both data sets resulted in 471 participants, 2355 observations and 8 variables.
+The original baseline dataset contained 483 participants. After removing 4 participants with MCI at baseline, 479 participants remained. Of these, 93 later developed MCI. The average age at baseline was 65.03. 30% of the women were APOE4 carriers. The amyloid data set contained 487 participants. This data set was converted to long format, resulting in 5 observations per participant. There were 8 participants onlyin the baseline data set and 16 participants only in the amyloid data set only. Keeping the participants in both data sets resulted in 471 participants, 2355 observations and 8 variables.
